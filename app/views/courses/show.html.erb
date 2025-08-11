@@ -1,0 +1,20 @@
+<h1><%= @course.title %></h1>
+<p><%= @course.description %></p>
+
+<hr>
+<h2>Lessons</h2>
+<%= link_to "Add Lesson", new_course_lesson_path(@course) %>
+
+<ul>
+  <% @course.lessons.each do |lesson| %>
+    <li>
+      <%= link_to lesson.title, course_lesson_path(@course, lesson) %>
+      |
+      <%= link_to "Edit", edit_course_lesson_path(@course, lesson) %>
+      |
+      <%= link_to "Delete", course_lesson_path(@course, lesson), data: { turbo_method: :delete, turbo_confirm: "Are you sure?" } %>
+    </li>
+  <% end %>
+</ul>
+
+<%= link_to "Back to Courses", courses_path %>
