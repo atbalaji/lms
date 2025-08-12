@@ -1,5 +1,6 @@
 class CoursesController < ApplicationController
   before_action :authenticate_user!
+  before_action :authorize_admin_or_instructor!, except: [:index, :show]
   before_action :set_course, only: [:show, :edit, :update, :destroy]
 
   def index
@@ -14,10 +15,13 @@ class CoursesController < ApplicationController
   end
 
   def create
-    @course = Course.new(course_params)
+    @course = current_user.courses.build(course_params)
 
     if @course.save
-      redirect_to @course, notice: "Course created successfully."
+      respond_to do |format|
+        format.turbo_stream
+        format.html { redirect_to @course, notice: "Course created successfully." }
+      end
     else
       render :new, status: :unprocessable_entity
     end
@@ -28,7 +32,10 @@ class CoursesController < ApplicationController
 
   def update
     if @course.update(course_params)
-      redirect_to @course, notice: "Course updated successfully."
+      respond_to do |format|
+        format.turbo_stream
+        format.html { redirect_to courses_path, notice: "Course updated" }
+      end
     else
       render :edit, status: :unprocessable_entity
     end
@@ -37,10 +44,19 @@ class CoursesController < ApplicationController
   def destroy
     @course.destroy
 
-    redirect_to courses_path, notice: "Course deleted"
+    respond_to do |format|
+      format.turbo_stream
+      format.html { redirect_to courses_path, notice: "Course deleted" }
+    end
   end
 
   private
+
+  def authorize_admin_or_instructor!
+    unless current_user.admin? || current_user.instructor?
+      redirect_to root_path, alert: "You are not authorized to perform this action."
+    end
+  end
 
   def set_course
     @course = Course.find(params[:id])

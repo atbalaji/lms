@@ -11,4 +11,12 @@ class User < ApplicationRecord
   has_many :enrolled_courses, through: :enrollments, source: :course
 
   validates :role, presence: true
+
+  before_validation :set_default_role, on: :create
+
+  private
+
+  def set_default_role
+    self.role ||= :student
+  end
 end
